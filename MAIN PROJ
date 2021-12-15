@@ -1,0 +1,264 @@
+import tkinter
+from tkinter import *
+import mysql.connector
+from tkinter import messagebox
+from tkinter import ttk
+
+main_database = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="Anciso-320910",
+    database="login_database"
+)
+cursordb = main_database.cursor()
+
+
+def login_verification():
+    user_verification = username_terminal.get()
+    pass_verification = password_terminal.get()
+    sql = "SELECT * FROM login_credentials WHERE username = %s and passowrd = %s"
+    cursordb.execute(sql, [user_verification, pass_verification])
+    results = cursordb.fetchall()
+    if results:
+        for i in results:
+            messagebox.showinfo("Successful", f"Login complete, hello {username.get()}")
+            frame.destroy()
+            label.destroy()
+            main.title("INVENTORY MANAGEMENT")
+            new_icon = PhotoImage(file='icons8-inventory-64.png')
+            main.iconphoto(True, new_icon)
+            main.config(bg="#FBE7C6")
+            new_frame = Frame(main)
+            new_label = Label(new_frame, bg='white', height=35, width=80)
+            Label(new_frame, bg='white', text="INVENTORY MANAGEMENT", font=('arial', 10, 'bold')).pack()
+            new_label.pack()
+            new_frame.place(x=40, y=20)
+            Button(new_frame, text='Check Stocks       ', font=('arial', 10, 'bold'), image=Check_Stocks,
+                   compound='left',
+                   bg='#B4F8C8', activebackground='red',
+                   relief=RAISED, command= lambda : create1()).place(x=305, y=49)
+            Button(new_frame, text='Update Employee\nDatabase  ', font=('arial', 9, 'bold'),
+                   image=check_employee, compound='left', bg='#B4F8C8',
+                   activebackground='red', relief=RAISED).place(x=40, y=212)
+            Button(new_frame, text='Update Customer\nDatabase  ', font=('arial', 9, 'bold'), image=customer_check,
+                   compound='left', bg='#B4F8C8', relief=RAISED,
+                   activebackground='red').place(x=40, y=376)
+            Button(new_frame, text=' Update Stocks    \n Database', font=('arial', 9, 'bold'), image=photo1,
+                   compound='left', bg='#B4F8C8', relief=RAISED,
+                   activebackground='red').place(x=40, y=49)
+            Button(new_frame, text='Employee Database', font=('arial', 9, 'bold'), image=photo2, compound='left',
+                   bg='#B4F8C8', relief=RAISED, activebackground='red', command=lambda: create()).place(x=305, y=212)
+            Button(new_frame, text='Customer Database', font=('arial', 9, 'bold'), image=customer_data, compound='left',
+                   bg='#B4F8C8', activebackground='red', relief=RAISED, command=lambda : create2()).place(x=305, y=376)
+
+    elif username.get() == "" or password.get() == "":
+        messagebox.showerror("ERROR", "Please Insert username/password")
+    else:
+        messagebox.showerror("ERROR", "Wrong username/password")
+
+
+def delete():
+    username_terminal.delete(0, END)
+    password_terminal.delete(0, END)
+
+
+def create():
+    new = Toplevel(main)
+    new.geometry('710x450')
+    new.resizable(FALSE, FALSE)
+    new.title("EMPLOYEE DATABASE")
+    cursordb.execute('SELECT * FROM employee_database')
+
+    def filterTeeView(*args):
+        ItemsOnTreeview = treeview.get_children()
+
+        search = search_var.get()
+        for z in ItemsOnTreeview:
+            if search in treeview.item(z)['values'][1]:
+                search_var_m = treeview.item(z)['values']
+                treeview.delete(z)
+
+                treeview.insert('', 0, values=search_var_m)
+
+    # entry frame
+    topframe = Frame(new, bg='white')
+    topframe.place(x=5, y=12, width=400, height=80)
+    # tree frame
+    tree_frame = Frame(new, bg='green')
+    tree_frame.place(x=5, y=100, width=700, height=300)
+    new.iconphoto(True, employee_icon)
+    Label(new, text="Employees", font=('Arial', 15, 'bold'), fg='white', background='black', relief=SUNKEN, bd=5,
+          padx=32, image=employee_icon, compound='left').place(x=415, y=6)
+
+    # search by text
+    lb1 = Label(topframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    # entry terminal
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+    search_var.trace('w', filterTeeView)
+
+    # treeview
+    column = ["Employee ID", "Full_name", "Gender", "Department", "Contact_number", "Address",
+              "Email", "Absents"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+    for x in column:
+        treeview.column(x, width=80)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in cursordb:
+        treeview.insert('', END, values=i)
+
+
+def create1():
+    new = Toplevel(main)
+    new.geometry('710x450')
+    new.resizable(FALSE, FALSE)
+    new.title("STOCK DATABASE")
+    cursordb.execute('SELECT * FROM pc_stocks')
+
+    def filterTeeView(*args):
+        ItemsOnTreeview = treeview.get_children()
+
+        search = search_var.get()
+        for z in ItemsOnTreeview:
+            if search in treeview.item(z)['values'][1]:
+                search_var_m = treeview.item(z)['values']
+                treeview.delete(z)
+
+                treeview.insert('', 0, values=search_var_m)
+
+    # entry frame
+    topframe = Frame(new, bg='white')
+    topframe.place(x=5, y=10, width=400, height=80)
+    # tree frame
+    tree_frame = Frame(new, bg='green')
+    tree_frame.place(x=5, y=100, width=700, height=300)
+    new.iconphoto(True, stock_icon)
+    Label(new, text="Stocks", font=('Arial', 15, 'bold'), fg='white', background='black', relief=SUNKEN, bd=5,
+          padx=45, image=stock_icon, compound='left').place(x=415, y=6)
+
+    # search by text
+    lb1 = Label(topframe, text="Check Stock:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    # entry terminal
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+    search_var.trace('w', filterTeeView)
+
+    # treeview
+    column = ["Inventory ID", "PC_PARTS", "Inventory_Value", "Quantity_in_stock"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+    for x in column:
+        treeview.column(x, width=80)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in cursordb:
+        treeview.insert('', END, values=i)
+
+
+def create2():
+    new = Toplevel(main)
+    new.geometry('710x440')
+    new.resizable(FALSE, FALSE)
+    new.title("CUSTOMER DATABASE")
+    cursordb.execute('SELECT * FROM customer_database')
+
+    def filterTeeView(*args):
+        ItemsOnTreeview = treeview.get_children()
+
+        search = search_var.get()
+        for z in ItemsOnTreeview:
+            if search in treeview.item(z)['values'][1]:
+                search_var_m = treeview.item(z)['values']
+                treeview.delete(z)
+
+                treeview.insert('', 0, values=search_var_m)
+
+    # entry frame
+    topframe = Frame(new, bg='white')
+    topframe.place(x=5, y=10, width=400, height=80)
+    # tree frame
+    tree_frame = Frame(new, bg='green')
+    tree_frame.place(x=5, y=100, width=700, height=300)
+    new.iconphoto(True, customer_icon)
+    Label(new, text="Customers", font=('Arial', 15, 'bold'), fg='white', background='black', relief=SUNKEN, bd=5,
+          padx=32, image=customer_icon, compound='left').place(x=415, y=6)
+
+    # search by text
+    lb1 = Label(topframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    # entry terminal
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+    search_var.trace('w', filterTeeView)
+
+    # treeview
+    column = ["Customer ID", "Customer name", "Nationality", "Adress", "Contact number", "Last visit", "Email", "Loyalty count"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+    for x in column:
+        treeview.column(x, width=80)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in cursordb:
+        treeview.insert('', END, values=i)
+
+
+main = Tk()
+main.geometry("650x600")
+main.resizable(FALSE, FALSE)
+main.config(bg="#064663")
+main.title("LOGIN")
+icon = PhotoImage(file='user.png')
+main.iconphoto(True, icon)
+Check_Stocks = PhotoImage(file='check stock.png')
+photo1 = PhotoImage(file='Hnet.com-imagemain.png')
+photo2 = PhotoImage(file='database png.png')
+check_employee = PhotoImage(file='background check.png')
+customer_check = PhotoImage(file='customer check.png')
+customer_data = PhotoImage(file='database for customer.png')
+employee_icon = PhotoImage(file='employee (1).png')
+stock_icon = PhotoImage(file='inventory (1).png')
+customer_icon = PhotoImage(file='male-customer (1).png')
+
+frame = Frame(main, bg="white", width=370, height=500, relief=SUNKEN, bd=5)
+frame.place(x=265, y=50)
+
+icon = PhotoImage(file='Webp.net-resizeimage.png')
+label = Label(main, background='#064663', image=icon, compound='bottom')
+label.place(x=80, y=200)
+
+user = Label(frame, text='USERNAME:', font=('arial', 16, 'bold'), bg="white")
+passw = Label(frame, text='PASSWORD:', font=('arial', 16, 'bold'), bg="white")
+user.place(x=20, y=68)
+passw.place(x=20, y=220)
+
+username = StringVar()
+password = StringVar()
+
+username_terminal = Entry(frame, textvariable=username, width=14, bd=2, font=('arial', 30))
+username_terminal.place(x=20, y=120)
+
+password_terminal = Entry(frame, textvariable=password, width=14, bd=2, font=('arial', 30), show='*')
+password_terminal.place(x=20, y=280)
+
+login_button = Button(frame, text='Login', height='2', width=20, bg='#189AB4', fg='#D4F1F4', bd=0,
+                      activebackground='#189AB4', activeforeground='#D4F1F4', command=login_verification)
+login_button.place(x=20, y=420)
+del_button = Button(frame, text='Clear', height='2', width=20, bg='#189AB4', fg='#D4F1F4', bd=0,
+                    activebackground='#189AB4', activeforeground='#D4F1F4', command=delete)
+del_button.place(x=20, y=360)
+
+main.mainloop()
