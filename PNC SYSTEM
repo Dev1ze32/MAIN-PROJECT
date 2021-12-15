@@ -1,0 +1,158 @@
+import tkinter
+from tkinter import *
+from tkinter import ttk
+import mysql.connector
+from tkinter import messagebox
+
+main_database = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="Anciso-320910",
+    database="login_database"
+)
+cursordb = main_database.cursor()
+cursordb.execute('SELECT * FROM student_database')
+
+
+def add_data():
+    n_student = StudentID.get()
+    n_fname = First_Name.get()
+    n_lname = Last_Name.get()
+    n_mobile = Mobile.get()
+    cursordb.execute('INSERT INTO student_database(StudentNumber, FirstName, LastName, ContactNumber)VALUES(%s, %s, '
+                     '%s, %s)', (n_student, n_fname, n_lname, n_mobile))
+
+    main_database.commit()
+    treeview.insert('', END, values=(n_student, n_fname, n_lname, n_mobile))
+
+
+def delete_data(tree):
+    selected = treeview.selection()[0]
+    n_fname = First_Name.get()
+    query = """Delete From student_database where FirstName=%s"""
+    value = (n_fname,)
+    cursordb.execute(query, value)
+    main_database.commit()
+    treeview.delete(selected)
+
+
+def update_data():
+    selected = treeview.selection()[0]
+    n_student = StudentID.get()
+    n_fname = First_Name.get()
+    n_lname = Last_Name.get()
+    n_mobile = Mobile.get()
+    sql = 'UPDATE student_database SET FirstName=%s, LastName=%s, ContactNumber=%s WHERE StudentNumber=%s'
+    value = (n_fname, n_lname, n_mobile, n_student)
+    cursordb.execute(sql, value)
+    main_database.commit()
+
+    main_database.commit()
+    treeview.delete(selected)
+    treeview.insert('', END, values=(n_student, n_fname, n_lname, n_mobile))
+
+
+def filterTeeView(*args):
+    ItemsOnTreeview = treeview.get_children()
+
+    search = search_var.get()
+    for z in ItemsOnTreeview:
+        if search in treeview.item(z)['values'][1]:
+            search_var_m = treeview.item(z)['values']
+            treeview.delete(z)
+
+            treeview.insert('', 0, values=search_var_m)
+
+
+students_window = Tk()
+students_window.geometry('800x500')
+students_window.resizable(FALSE, FALSE)
+students_window.title('PNC Student Information System')
+
+
+# entry frame
+topframe = Frame(students_window, bg='black')
+topframe.place(x=300, y=150, width=300, height=40)
+# search by text
+lb1 = Label(topframe, text="Check name:", fg='black', bg='white')
+lb1.place(x=10, y=10)
+search_var = StringVar()
+# entry terminal
+entry = Entry(topframe, textvariable=search_var, font=('Arial', 10, 'bold'))
+entry.place(x=100, y=10)
+search_var.trace('w', filterTeeView)
+
+
+# tree frame
+tree_frame = Frame(students_window, bg='green')
+tree_frame.place(x=20, y=200, width=750, height=250)
+
+StudentID = IntVar()
+First_Name = StringVar()
+Last_Name = StringVar()
+Mobile = StringVar()
+Add_bulk_student = StringVar()
+Export = StringVar()
+
+Label(students_window, text='Student ID:', font=('arial', 9)).place(x=10, y=10)
+Label(students_window, text='First Name:', font=('arial', 9)).place(x=10, y=40)
+Label(students_window, text='Last Name:', font=('arial', 9)).place(x=10, y=75)
+Label(students_window, text='Mobile:', font=('arial', 9)).place(x=10, y=110)
+Label(students_window, text='Add bulk student:', font=('arial', 9)).place(x=350, y=10)
+Label(students_window, text='Export:', font=('arial', 9)).place(x=350, y=60)
+
+terminal1 = Entry(students_window, font=('Arial', 9, 'bold'), textvariable=StudentID)
+terminal2 = Entry(students_window, font=('Arial', 9, 'bold'), textvariable=First_Name)
+terminal3 = Entry(students_window, font=('Arial', 9, 'bold'), textvariable=Last_Name)
+terminal4 = Entry(students_window, font=('Arial', 9, 'bold'), textvariable=Mobile)
+terminal5 = Entry(students_window, font=('Arial', 9, 'bold'), textvariable=Add_bulk_student)
+terminal6 = Entry(students_window, font=('Arial', 9, 'bold'), textvariable=Export)
+
+terminal1.place(x=80, y=10)
+terminal2.place(x=80, y=40)
+terminal3.place(x=80, y=75)
+terminal4.place(x=60, y=110)
+terminal5.place(x=450, y=10)
+terminal6.place(x=400, y=60)
+
+frm = Frame(students_window, bg='black', height=30, width=150)
+frm.place(x=600, y=10)
+btn_add = Button(frm, text='Add')
+btn_open = Button(frm, text='Open')
+btn_add.grid(row=0, column=0)
+btn_open.grid(row=0, column=1)
+
+frm2 = Frame(students_window, bg='black', height=30, width=150)
+frm2.place(x=560, y=60)
+btn2_add = Button(frm2, text='Add')
+btn2_open = Button(frm2, text='Open')
+btn2_add.grid(row=0, column=0)
+btn2_open.grid(row=0, column=1)
+
+# treeview
+column = ["StudentNumber", "FirstName", "LastName", "ContactNumber"]
+treeview = ttk.Treeview(tree_frame, height=100, column=column)
+treeview.pack(fill='both')
+treeview['show'] = 'headings'
+
+for x in column:
+    treeview.column(x, width=80)
+    treeview.heading(x, text=x.capitalize())
+
+# inserting data
+for i in cursordb:
+    treeview.insert('', END, values=i)
+
+insert_button = tkinter.Button(students_window, text='Add', command=lambda: add_data())
+insert_button.config(font=('arial', 14, 'bold'), bg='green', fg='white')
+insert_button.place(x=20, y=150)
+
+del_button = tkinter.Button(students_window, text='Delete', command=lambda: delete_data(treeview))
+del_button.config(font=('arial', 14, 'bold'), bg='red', fg='white')
+del_button.place(x=80, y=150)
+
+update_button = tkinter.Button(students_window, text='Update', command=lambda :update_data())
+update_button.config(font=('arial', 14, 'bold'), bg='yellow', fg='black')
+update_button.place(x=160, y=150)
+
+students_window.mainloop()
