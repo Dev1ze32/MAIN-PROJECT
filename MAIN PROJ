@@ -27,7 +27,7 @@ def login_verification():
             main.title("INVENTORY MANAGEMENT")
             new_icon = PhotoImage(file='icons8-inventory-64.png')
             main.iconphoto(True, new_icon)
-            main.config(bg="#FBE7C6")
+            main.config(bg="#B1D0E0")
             new_frame = Frame(main)
             new_label = Label(new_frame, bg='white', height=35, width=80)
             Label(new_frame, bg='white', text="INVENTORY MANAGEMENT", font=('arial', 10, 'bold')).pack()
@@ -36,20 +36,21 @@ def login_verification():
             Button(new_frame, text='Check Stocks       ', font=('arial', 10, 'bold'), image=Check_Stocks,
                    compound='left',
                    bg='#B4F8C8', activebackground='red',
-                   relief=RAISED, command= lambda : create1()).place(x=305, y=49)
+                   relief=RAISED, command=lambda: create1()).place(x=305, y=49)
             Button(new_frame, text='Update Employee\nDatabase  ', font=('arial', 9, 'bold'),
                    image=check_employee, compound='left', bg='#B4F8C8',
-                   activebackground='red', relief=RAISED).place(x=40, y=212)
+                   activebackground='red', relief=RAISED, command=lambda: update_employee()).place(x=40, y=212)
             Button(new_frame, text='Update Customer\nDatabase  ', font=('arial', 9, 'bold'), image=customer_check,
                    compound='left', bg='#B4F8C8', relief=RAISED,
-                   activebackground='red').place(x=40, y=376)
+                   activebackground='red', command=lambda: update_customer()).place(x=40, y=376)
             Button(new_frame, text=' Update Stocks    \n Database', font=('arial', 9, 'bold'), image=photo1,
                    compound='left', bg='#B4F8C8', relief=RAISED,
-                   activebackground='red').place(x=40, y=49)
-            Button(new_frame, text='Employee Database', font=('arial', 9, 'bold'), image=photo2, compound='left',
+                   activebackground='red', command=lambda: update_stock()).place(x=40, y=49)
+            Button(new_frame, text='  Return request       ', font=('arial', 9, 'bold'), image=photo2, compound='left',
                    bg='#B4F8C8', relief=RAISED, activebackground='red', command=lambda: create()).place(x=305, y=212)
-            Button(new_frame, text='Customer Database', font=('arial', 9, 'bold'), image=customer_data, compound='left',
-                   bg='#B4F8C8', activebackground='red', relief=RAISED, command=lambda : create2()).place(x=305, y=376)
+            Button(new_frame, text='  Order Database     ', font=('arial', 9, 'bold'), image=customer_data,
+                   compound='left',
+                   bg='#B4F8C8', activebackground='red', relief=RAISED, command=lambda: create2()).place(x=305, y=376)
 
     elif username.get() == "" or password.get() == "":
         messagebox.showerror("ERROR", "Please Insert username/password")
@@ -203,7 +204,8 @@ def create2():
     search_var.trace('w', filterTeeView)
 
     # treeview
-    column = ["Customer ID", "Customer name", "Nationality", "Adress", "Contact number", "Last visit", "Email", "Loyalty count"]
+    column = ["Customer ID", "Customer name", "Nationality", "Adress", "Contact number", "Last visit", "Email",
+              "Loyalty count"]
     treeview = ttk.Treeview(tree_frame, height=100, column=column)
     treeview.pack(fill='both')
     treeview['show'] = 'headings'
@@ -214,6 +216,437 @@ def create2():
     # inserting data
     for i in cursordb:
         treeview.insert('', END, values=i)
+
+
+def update_stock():
+    new = Toplevel(main)
+    new.geometry('800x650')
+    new.resizable(FALSE, FALSE)
+    new.title("UPDATE CUSTOMER DATABASE")
+    cursordb.execute('SELECT * FROM stock_management')
+    new.config(bg="#FBE7C6")
+
+    def add_data():
+        n_s_no = s_no.get()
+        n_Item_name = Item_name.get()
+        n_Quantity = Quantity.get()
+        n_Unit_price = Unit_price.get()
+        n_Sold = Sold.get()
+        n_discount = discount.get()
+        cursordb.execute(
+            'INSERT INTO stock_management(s_no, Item_name, Quantity, Unit_price, Sold, Discount)VALUES(%s, %s, %s, '
+            '%s, %s, %s)', (n_s_no, n_Item_name, n_Quantity, n_Unit_price, n_Sold, n_discount))
+
+        main_database.commit()
+        treeview.insert('', END, values=(n_s_no, n_Item_name, n_Quantity, n_Unit_price, n_Sold, n_discount))
+
+    def update_data():
+        selected = treeview.selection()[0]
+        n_s_no = s_no.get()
+        n_Item_name = Item_name.get()
+        n_Quantity = Quantity.get()
+        n_Unit_price = Unit_price.get()
+        n_Sold = Sold.get()
+        n_discount = discount.get()
+        sql = 'UPDATE stock_management SET Item_name=%s, Quantity=%s, Unit_price=%s,Sold=%s, Discount=%s WHERE s_no=%s'
+        value = (n_Item_name, n_Quantity, n_Unit_price, n_Sold, n_discount, n_s_no)
+        cursordb.execute(sql, value)
+        main_database.commit()
+
+        treeview.delete(selected)
+        treeview.insert('', END, values=(n_s_no, n_Item_name, n_Quantity, n_Unit_price, n_Sold, n_discount))
+
+    def delete_data(tree):
+        selected = treeview.selection()[0]
+        n_s_no = s_no.get()
+        query = """Delete From stock_management where s_no=%s"""
+        value = (n_s_no,)
+        cursordb.execute(query, value)
+        main_database.commit()
+        treeview.delete(selected)
+
+    def filterTeeView(*args):
+        ItemsOnTreeview = treeview.get_children()
+
+        search = search_var.get()
+        for z in ItemsOnTreeview:
+            if search in treeview.item(z)['values'][1]:
+                search_var_m = treeview.item(z)['values']
+                treeview.delete(z)
+
+                treeview.insert('', 0, values=search_var_m)
+
+    ent_frm = Frame(new, bg='white', height=230, width=300)
+    ent_frm.place(x=40, y=130)
+    Label(ent_frm, text='S.No:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=10)
+    Label(ent_frm, text='Item name:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=50)
+    Label(ent_frm, text='Quantity:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=90)
+    Label(ent_frm, text='Unit price:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=130)
+    Label(ent_frm, text='Sold:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=170)
+    Label(ent_frm, text='Discount:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=200)
+
+    s_no = IntVar()
+    terminal1 = Entry(ent_frm, textvariable=s_no)
+    Item_name = StringVar()
+    terminal2 = Entry(ent_frm, textvariable=Item_name)
+    Quantity = StringVar()
+    terminal3 = Entry(ent_frm, textvariable=Quantity)
+    Unit_price = StringVar()
+    terminal4 = Entry(ent_frm, textvariable=Unit_price)
+    Sold = IntVar()
+    terminal5 = Entry(ent_frm, textvariable=Sold)
+    discount = IntVar()
+    terminal6 = Entry(ent_frm, textvariable=discount)
+
+    terminal1.place(x=70, y=10)
+    terminal2.place(x=90, y=50)
+    terminal3.place(x=80, y=90)
+    terminal4.place(x=100, y=130)
+    terminal5.place(x=60, y=170)
+    terminal6.place(x=80, y=200)
+
+    # treeview frame
+    tree_frame = Frame(new, bg='white')
+    tree_frame.place(x=40, y=390, width=720, height=220)
+    # treeview
+    column = ["s_no", "Item_name", "Quantity", "Unit_price", "Sold", "Discount"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+
+    for x in column:
+        treeview.column(x, width=80)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in cursordb:
+        treeview.insert('', END, values=i)
+
+    # title
+    title_frm = Frame(new, bg='white', height=90, width=700)
+    title_frm.place(x=40, y=20)
+    Label(title_frm, text='STOCK MANAGEMENT', font=('arial', 40, 'bold'), bg='white').place(x=50, y=10)
+
+    # search frame
+    search_var = StringVar()
+    s_frm = Frame(new, bg='white', height=70, width=390)
+    s_frm.place(x=360, y=290)
+    Label(s_frm, text='Check Stock:', bg='white', fg='black', font=('arial', 9, 'bold')).place(x=10, y=20)
+    search_box = Entry(s_frm, textvariable=search_var, width=40)
+    search_box.place(x=100, y=20)
+    search_var.trace('w', filterTeeView)
+
+    # button frame
+    b_frm = Frame(new, bg='white', height=130, width=390)
+    b_frm.place(x=360, y=130)
+    Button(b_frm, text='Add', bg='green', fg='white', activeforeground='white',
+           activebackground='green', height=2, width=22, font=('arial', 9, 'bold'),
+           command=lambda: add_data()).place(x=20, y=10)
+    Button(b_frm, text='delete', bg='red', fg='white', activeforeground='white',
+           activebackground='red', height=2, width=22, font=('arial', 9, 'bold'),
+           command=lambda: delete_data(treeview)).place(x=210, y=10)
+    Button(b_frm, text='update', bg='yellow', fg='black', activeforeground='black',
+           activebackground='yellow', height=2, width=32, font=('arial', 9, 'bold'),
+           command=lambda: update_data()).place(x=80, y=70)
+
+
+def update_employee():
+    new = Toplevel(main)
+    new.geometry('1100x650')
+    new.resizable(FALSE, FALSE)
+    new.title("EMPLOYEE MANAGEMENT")
+    new.config(bg="#FBE7C6")
+    cursordb.execute('SELECT * FROM employee_database')
+
+    def add_data():
+        n_Employee_ID = Employee_ID.get()
+        n_Full_name = Full_name.get()
+        n_Gender = Gender.get()
+        n_Department = Department.get()
+        n_Contact_number = Contact_number.get()
+        n_Address = Address.get()
+        n_email = Email.get()
+        n_Absents = Absents.get()
+        cursordb.execute(
+            'INSERT INTO employee_database(Employee_ID, Full_name, Gender, Department, Contact_number, Address, '
+            'Email, Absents)VALUES(%s, %s, %s, %s, %s, %s, %s, %s)',
+            (n_Employee_ID, n_Full_name, n_Gender, n_Department,
+             n_Contact_number, n_Address, n_email,
+             n_Absents))
+
+        main_database.commit()
+        treeview.insert('', END, values=(n_Employee_ID, n_Full_name, n_Gender, n_Department,
+                                         n_Contact_number, n_Address, n_email, n_Absents))
+
+    def update_data():
+        selected = treeview.selection()[0]
+        n_Employee_ID = Employee_ID.get()
+        n_Full_name = Full_name.get()
+        n_Gender = Gender.get()
+        n_Department = Department.get()
+        n_Contact_number = Contact_number.get()
+        n_Address = Address.get()
+        n_email = Email.get()
+        n_Absents = Absents.get()
+        sql = 'UPDATE employee_database SET Full_name=%s, Gender=%s, Department=%s, Contact_number=%s,Address=%s, ' \
+              'Email=%s, Absents=%s WHERE Employee_ID=%s '
+        value = (n_Full_name, n_Gender, n_Department, n_Contact_number, n_Address, n_email, n_Absents, n_Employee_ID)
+        cursordb.execute(sql, value)
+        main_database.commit()
+
+        treeview.delete(selected)
+        treeview.insert('', END, values=(n_Employee_ID, n_Full_name, n_Gender, n_Department, n_Contact_number,
+                                         n_Address, n_email, n_Absents))
+
+    def delete_data(tree):
+        selected = treeview.selection()[0]
+        n_Full_name = Full_name.get()
+        query = """Delete From employee_database where Full_name=%s"""
+        value = (n_Full_name,)
+        cursordb.execute(query, value)
+        main_database.commit()
+        treeview.delete(selected)
+
+    def filterTeeView(*args):
+        ItemsOnTreeview = treeview.get_children()
+
+        search = search_var.get()
+        for z in ItemsOnTreeview:
+            if search in treeview.item(z)['values'][1]:
+                search_var_m = treeview.item(z)['values']
+                treeview.delete(z)
+
+                treeview.insert('', 0, values=search_var_m)
+
+    # user input frame
+    frm1 = Frame(new, height=600, width=350, bg='white')
+    frm1.place(x=20, y=20)
+    Button(frm1, text='Add', bg='green', fg='white', activeforeground='white',
+           activebackground='green', height=2, width=22, font=('arial', 9, 'bold'), command=lambda: add_data()).place(
+        x=10, y=500)
+    Button(frm1, text='Delete', bg='red', fg='white', activeforeground='white',
+           activebackground='red', height=2, width=20, font=('arial', 9, 'bold'),
+           command=lambda: delete_data(treeview)).place(x=190, y=500)
+    Button(frm1, text='Update', bg='yellow', fg='black', activeforeground='black',
+           activebackground='yellow', height=2, width=46, font=('arial', 9, 'bold'),
+           command=lambda: update_data()).place(x=10, y=550)
+    Label(frm1, text='Employee_ID', font=('arial', 9, 'bold')).place(x=10, y=10)
+    Employee_ID = IntVar()
+    e1 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Employee_ID)
+    e1.place(x=10, y=30)
+    Full_name = StringVar()
+    Label(frm1, text='Full_name', font=('arial', 9, 'bold')).place(x=10, y=70)
+    e2 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Full_name)
+    e2.place(x=10, y=90)
+    Gender = StringVar()
+    Label(frm1, text='Gender', font=('arial', 9, 'bold')).place(x=10, y=120)
+    e3 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Gender)
+    e3.place(x=10, y=150)
+    Department = StringVar()
+    Label(frm1, text='Department', font=('arial', 9, 'bold')).place(x=10, y=190)
+    e4 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Department)
+    e4.place(x=10, y=220)
+    Contact_number = StringVar()
+    Label(frm1, text='Contact_number', font=('arial', 9, 'bold')).place(x=10, y=250)
+    e5 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Contact_number)
+    e5.place(x=10, y=280)
+    Address = StringVar()
+    Label(frm1, text='Address', font=('arial', 9, 'bold')).place(x=10, y=310)
+    e6 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Address)
+    e6.place(x=10, y=340)
+    Email = StringVar()
+    Label(frm1, text='Email', font=('arial', 9, 'bold')).place(x=10, y=370)
+    e7 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Email)
+    e7.place(x=10, y=400)
+    Absents = IntVar()
+    Label(frm1, text='Absents', font=('arial', 9, 'bold')).place(x=10, y=430)
+    e8 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Absents)
+    e8.place(x=10, y=460)
+
+    # treeview frame
+    tree_frame = Frame(new, bg='white')
+    tree_frame.place(x=380, y=200, width=700, height=420)
+    # treeview
+    column = ["Employee_ID", "Full_name", "Gender", "Department", "Contact_number", "Address", "Email",
+              "Absents"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+
+    for x in column:
+        treeview.column(x, width=80)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in cursordb:
+        treeview.insert('', END, values=i)
+    # title frame
+    topframe = Frame(new, bg='white')
+    topframe.place(x=380, y=20, width=700, height=80)
+    Label(topframe, text='UPDATE EMPLOYEE', font=('arial', 20, 'bold'), fg='black', bg='white', image=check_employee,
+          compound='left').pack()
+    # search frame
+    search_var = StringVar()
+    sframe = Frame(new, bg='black')
+    sframe.place(x=380, y=120, width=340, height=70)
+    # search by text
+    lb1 = Label(sframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var.trace('w', filterTeeView)
+    # entry terminal
+    entry = Entry(sframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+
+
+def update_customer():
+    new = Toplevel(main)
+    new.geometry('1200x650')
+    new.resizable(FALSE, FALSE)
+    new.title("CUSTOMER MANAGEMENT")
+    new.config(bg="#FBE7C6")
+    cursordb.execute('SELECT * FROM customer_database')
+
+    def add_data():
+        n_Customer_ID = Customer_ID.get()
+        n_Customer_name = Customer_name.get()
+        n_Nationality = Nationality.get()
+        n_Address = Address.get()
+        n_Contact_number = Contact_number.get()
+        n_Last_visit = Last_visit.get()
+        n_Email = Email.get()
+        n_Loyalty_count = Loyalty_count.get()
+        cursordb.execute(
+            'INSERT INTO customer_database(Customer_ID, Customer_name, Nationality, Adress, Contact_number, '
+            'Last_visit, ''Email, Loyalty_count)VALUES(%s, %s, %s, %s, %s, %s, %s, %s)',
+            (n_Customer_ID, n_Customer_name, n_Nationality, n_Address,
+             n_Contact_number, n_Last_visit, n_Email,
+             n_Loyalty_count))
+
+        main_database.commit()
+        treeview.insert('', END, values=(n_Customer_ID, n_Customer_name, n_Nationality, n_Address,
+                                         n_Contact_number, n_Last_visit, n_Email, n_Loyalty_count))
+
+    def update_data():
+        selected = treeview.selection()[0]
+        n_Customer_ID = Customer_ID.get()
+        n_Customer_name = Customer_name.get()
+        n_Nationality = Nationality.get()
+        n_Address = Address.get()
+        n_Contact_number = Contact_number.get()
+        n_Last_visit = Last_visit.get()
+        n_Email = Email.get()
+        n_Loyalty_count = Loyalty_count.get()
+        sql = 'UPDATE customer_database SET Customer_name=%s, Nationality=%s, Adress=%s, Contact_number=%s, ' \
+              'Last_visit=%s, Email=%s, Loyalty_count=%s WHERE Customer_ID=%s '
+        value = (n_Customer_name, n_Nationality, n_Address,n_Contact_number, n_Last_visit, n_Email,
+                 n_Loyalty_count, n_Customer_ID)
+        cursordb.execute(sql, value)
+        main_database.commit()
+
+        treeview.delete(selected)
+        treeview.insert('', END, values=(n_Customer_ID, n_Customer_name, n_Nationality, n_Address,
+                                         n_Contact_number, n_Last_visit, n_Email,n_Loyalty_count))
+
+    def delete_data(tree):
+        selected = treeview.selection()[0]
+        n_Customer_name = Customer_name.get()
+        query = """Delete From customer_database where Customer name=%s"""
+        value = (n_Customer_name,)
+        cursordb.execute(query, value)
+        main_database.commit()
+        treeview.delete(selected)
+
+    def filterTeeView(*args):
+        ItemsOnTreeview = treeview.get_children()
+
+        search = search_var.get()
+        for z in ItemsOnTreeview:
+            if search in treeview.item(z)['values'][1]:
+                search_var_m = treeview.item(z)['values']
+                treeview.delete(z)
+
+                treeview.insert('', 0, values=search_var_m)
+
+    # user input frame
+    frm1 = Frame(new, height=600, width=350, bg='white')
+    frm1.place(x=20, y=20)
+    Button(frm1, text='Add', bg='green', fg='white', activeforeground='white',
+           activebackground='green', height=2, width=22, font=('arial', 9, 'bold'), command=lambda: add_data()).place(
+        x=10, y=500)
+    Button(frm1, text='Delete', bg='red', fg='white', activeforeground='white',
+           activebackground='red', height=2, width=20, font=('arial', 9, 'bold'),
+           command=lambda: delete_data(treeview)).place(x=190, y=500)
+    Button(frm1, text='Update', bg='yellow', fg='black', activeforeground='black',
+           activebackground='yellow', height=2, width=46, font=('arial', 9, 'bold'),
+           command=lambda: update_data()).place(x=10, y=550)
+    Label(frm1, text='Customer ID', font=('arial', 9, 'bold')).place(x=10, y=10)
+    Customer_ID = IntVar()
+    e1 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Customer_ID)
+    e1.place(x=10, y=30)
+    Customer_name = StringVar()
+    Label(frm1, text='Customer name', font=('arial', 9, 'bold')).place(x=10, y=70)
+    e2 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Customer_name)
+    e2.place(x=10, y=90)
+    Nationality = StringVar()
+    Label(frm1, text='Nationality', font=('arial', 9, 'bold')).place(x=10, y=120)
+    e3 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Nationality)
+    e3.place(x=10, y=150)
+    Address = StringVar()
+    Label(frm1, text='Address', font=('arial', 9, 'bold')).place(x=10, y=190)
+    e4 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Address)
+    e4.place(x=10, y=220)
+    Contact_number = StringVar()
+    Label(frm1, text='Contact number', font=('arial', 9, 'bold')).place(x=10, y=250)
+    e5 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Contact_number)
+    e5.place(x=10, y=280)
+    Last_visit = StringVar()
+    Label(frm1, text='Last visit', font=('arial', 9, 'bold')).place(x=10, y=310)
+    e6 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Last_visit)
+    e6.place(x=10, y=340)
+    Email = StringVar()
+    Label(frm1, text='Email', font=('arial', 9, 'bold')).place(x=10, y=370)
+    e7 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Email)
+    e7.place(x=10, y=400)
+    Loyalty_count = IntVar()
+    Label(frm1, text='Loyalty count', font=('arial', 9, 'bold')).place(x=10, y=430)
+    e8 = Entry(frm1, font=('arial', 10, 'bold'), textvariable=Loyalty_count)
+    e8.place(x=10, y=460)
+
+    # treeview frame
+    tree_frame = Frame(new, bg='white')
+    tree_frame.place(x=380, y=200, width=800, height=420)
+    # treeview
+    column = ["Customer ID", "Customer name", "Nationality", "Address", "Contact number", "Last visit", "Email",
+              "Loyalty count"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+
+    for x in column:
+        treeview.column(x, width=80)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in cursordb:
+        treeview.insert('', END, values=i)
+    # title frame
+    topframe = Frame(new, bg='white')
+    topframe.place(x=380, y=20, width=700, height=80)
+    Label(topframe, text='CUSTOMER MANAGEMENT', font=('arial', 20, 'bold'), fg='black', bg='white',
+          image=check_employee,
+          compound='left').pack()
+    # search frame
+    search_var = StringVar()
+    sframe = Frame(new, bg='black')
+    sframe.place(x=380, y=120, width=340, height=70)
+    # search by text
+    lb1 = Label(sframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    search_var.trace('w', filterTeeView)
+    # entry terminal
+    entry = Entry(sframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
 
 
 main = Tk()
