@@ -11,6 +11,10 @@ main_database = mysql.connector.connect(
     database="login_database"
 )
 cursordb = main_database.cursor()
+ncursor = main_database.cursor()
+u_cursor = main_database.cursor()
+s_cursor = main_database.cursor()
+r_cursor = main_database.cursor()
 
 
 def login_verification():
@@ -25,32 +29,42 @@ def login_verification():
             frame.destroy()
             label.destroy()
             main.title("INVENTORY MANAGEMENT")
-            new_icon = PhotoImage(file='icons8-inventory-64.png')
-            main.iconphoto(True, new_icon)
+            main.iconphoto(True, d_icon)
             main.config(bg="#B1D0E0")
             new_frame = Frame(main)
             new_label = Label(new_frame, bg='white', height=35, width=80)
             Label(new_frame, bg='white', text="INVENTORY MANAGEMENT", font=('arial', 10, 'bold')).pack()
             new_label.pack()
             new_frame.place(x=40, y=20)
-            Button(new_frame, text='Shipping              ', font=('arial', 10, 'bold'), image=Check_Stocks,
+            zxx = Button(new_frame, text='     Shipping         ', font=('arial', 10, 'bold'), image=Check_Stocks,
+                         compound='left',
+                         bg='#B4F8C8', activebackground='red',
+                         relief=RAISED, command=lambda: shipping_data(zxx))
+            zxx.place(x=305, y=49)
+            ue = Button(new_frame, text='Update Employee\nDatabase  ', font=('arial', 9, 'bold'),
+                        image=check_employee, compound='left', bg='#B4F8C8',
+                        activebackground='red', relief=RAISED, command=lambda: update_employee(ue))
+            ue.place(x=40, y=212)
+            uc = Button(new_frame, text='Update Customer\nDatabase  ', font=('arial', 9, 'bold'), image=customer_check,
+                        compound='left', bg='#B4F8C8', relief=RAISED,
+                        activebackground='red', command=lambda: update_customer(uc))
+            uc.place(x=40, y=376)
+            us = Button(new_frame, text=' Update Stocks    \n Database', font=('arial', 9, 'bold'), image=photo1,
+                        compound='left', bg='#B4F8C8', relief=RAISED,
+                        activebackground='red', command=lambda: update_stock(us))
+            us.place(x=40, y=49)
+            rq = Button(new_frame, text='    Return request     ', font=('arial', 9, 'bold'), image=photo2,
+                        compound='left',
+                        bg='#B4F8C8', relief=RAISED, activebackground='red', command=lambda: req_return(rq))
+            rq.place(x=305, y=212)
+            db = Button(new_frame, text='  Databases                ', font=('arial', 9, 'bold'), image=customer_data,
                    compound='left',
-                   bg='#B4F8C8', activebackground='red',
-                   relief=RAISED, command=lambda: shipping_data()).place(x=305, y=49)
-            Button(new_frame, text='Update Employee\nDatabase  ', font=('arial', 9, 'bold'),
-                   image=check_employee, compound='left', bg='#B4F8C8',
-                   activebackground='red', relief=RAISED, command=lambda: update_employee()).place(x=40, y=212)
-            Button(new_frame, text='Update Customer\nDatabase  ', font=('arial', 9, 'bold'), image=customer_check,
-                   compound='left', bg='#B4F8C8', relief=RAISED,
-                   activebackground='red', command=lambda: update_customer()).place(x=40, y=376)
-            Button(new_frame, text=' Update Stocks    \n Database', font=('arial', 9, 'bold'), image=photo1,
-                   compound='left', bg='#B4F8C8', relief=RAISED,
-                   activebackground='red', command=lambda: update_stock()).place(x=40, y=49)
-            Button(new_frame, text='  Return request       ', font=('arial', 9, 'bold'), image=photo2, compound='left',
-                   bg='#B4F8C8', relief=RAISED, activebackground='red', command=lambda: req_return()).place(x=305, y=212)
-            Button(new_frame, text='  Databases                ', font=('arial', 9, 'bold'), image=customer_data,
-                   compound='left',
-                   bg='#B4F8C8', activebackground='red', relief=RAISED, command=lambda: create2()).place(x=305, y=376)
+                   bg='#B4F8C8', activebackground='red', relief=RAISED, command=lambda: create2(db))
+            db.place(x=305, y=376)
+            btn1_r = Button(new_frame, text=' refresh', font=('arial', 9, 'bold'),
+                            compound='left', bg='#B4F8C8', activebackground='red', relief=RAISED,
+                            command=lambda: refresh(zxx, rq, ue, uc, us, db))
+            btn1_r.place(x=250, y=520)
 
     elif username.get() == "" or password.get() == "":
         messagebox.showerror("ERROR", "Please Insert username/password")
@@ -63,12 +77,23 @@ def delete():
     password_terminal.delete(0, END)
 
 
-def req_return():
+def refresh(button, button1, button2, button3, button4, button5):
+    button['state'] = 'normal'
+    button1['state'] = 'normal'
+    button2['state'] = 'normal'
+    button3['state'] = 'normal'
+    button4['state'] = 'normal'
+    button5['state'] = 'normal'
+
+
+def req_return(button):
     new = Toplevel(main)
-    new.geometry('710x620')
+    new.geometry('720x620')
     new.resizable(FALSE, FALSE)
-    new.title("RETURN DATABASE")
+    new.title("RETURNS")
+    new.config(bg='#191919')
     cursordb.execute('SELECT * FROM return_database')
+    button['state'] = 'disabled'
 
     def filterTeeView(*args):
         ItemsOnTreeview = treeview.get_children()
@@ -125,21 +150,21 @@ def req_return():
         treeview.delete(selected)
 
     # entry frame
-    topframe = Frame(new, bg='white')
-    topframe.place(x=5, y=12, width=400, height=80)
+    topframe = Frame(new, bg='#C84B31')
+    topframe.place(x=15, y=12, width=405, height=80)
     # tree frame
-    tree_frame = Frame(new, bg='green')
-    tree_frame.place(x=5, y=300, width=700, height=300)
-    new.iconphoto(True, employee_icon)
-    Label(new, text="Returns     ", font=('Arial', 15, 'bold'), fg='white', background='black', relief=SUNKEN, bd=5,
-          padx=32, image=employee_icon, compound='left').place(x=415, y=6)
+    tree_frame = Frame(new, bg='#ECDBBA')
+    tree_frame.place(x=12, y=300, width=695, height=300)
+    new.iconphoto(FALSE, photo2)
+    Label(new, text="Returns   ", font=('Arial', 10, 'bold'), fg='white', background='#2D4263', relief=FLAT, bd=5,
+          padx=40, pady=1, image=icon_return, compound='left').place(x=431, y=9)
 
     # search by text
-    lb1 = Label(topframe, text="Check returns:", fg='black', bg='white')
+    lb1 = Label(topframe, text="Check returns:", fg='black', bg='#ECDBBA')
     lb1.place(x=10, y=32)
     search_var = StringVar()
     # entry terminal
-    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'), bg='#ECDBBA')
     entry.place(x=95, y=30)
     search_var.trace('w', filterTeeView)
 
@@ -157,36 +182,36 @@ def req_return():
     for i in cursordb:
         treeview.insert('', END, values=i)
 
-    function_frm = Frame(new, bg='white', width=700, height=180)
-    function_frm.place(x=5, y=110)
-    Label(function_frm, text='return_ID:', font=('arial', 9, 'bold'), bg='white').place(x=10, y=20)
+    function_frm = Frame(new, bg='#C84B31', width=688, height=180)
+    function_frm.place(x=15, y=110)
+    Label(function_frm, text='return_ID:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=10, y=20)
     r_id = IntVar()
-    Label(function_frm, text='Order ID:', font=('arial', 9, 'bold'), bg='white').place(x=10, y=60)
+    Label(function_frm, text='Order ID:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=10, y=60)
     o_id = StringVar()
-    Label(function_frm, text='Product:', font=('arial', 9, 'bold'), bg='white').place(x=10, y=100)
+    Label(function_frm, text='Product:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=10, y=100)
     product = StringVar()
-    Label(function_frm, text='Reason:', font=('arial', 9, 'bold'), bg='white').place(x=260, y=20)
+    Label(function_frm, text='Reason:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=260, y=20)
     reason = StringVar()
-    Label(function_frm, text='Quantity:', font=('arial', 9, 'bold'), bg='white').place(x=260, y=60)
+    Label(function_frm, text='Quantity:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=260, y=60)
     quantity = StringVar()
-    Label(function_frm, text='Date:', font=('arial', 9, 'bold'), bg='white').place(x=260, y=100)
+    Label(function_frm, text='Date:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=260, y=100)
     date = StringVar()
-    Label(function_frm, text='Status:', font=('arial', 9, 'bold'), bg='white').place(x=480, y=20)
+    Label(function_frm, text='Status:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=480, y=20)
     status = StringVar()
 
-    e1 = Entry(function_frm, textvariable=r_id)
+    e1 = Entry(function_frm, textvariable=r_id, bg='#ECDBBA')
     e1.place(x=80, y=20)
-    e2 = Entry(function_frm, textvariable=o_id)
+    e2 = Entry(function_frm, textvariable=o_id, bg='#ECDBBA')
     e2.place(x=80, y=60)
-    e3 = Entry(function_frm, textvariable=product)
+    e3 = Entry(function_frm, textvariable=product, bg='#ECDBBA')
     e3.place(x=80, y=100)
-    e4 = Entry(function_frm, textvariable=reason)
+    e4 = Entry(function_frm, textvariable=reason, bg='#ECDBBA')
     e4.place(x=330, y=20)
-    e5 = Entry(function_frm, textvariable=quantity)
+    e5 = Entry(function_frm, textvariable=quantity, bg='#ECDBBA')
     e5.place(x=330, y=60)
-    e6 = Entry(function_frm, textvariable=date)
+    e6 = Entry(function_frm, textvariable=date, bg='#ECDBBA')
     e6.place(x=330, y=100)
-    e7 = Entry(function_frm, textvariable=status)
+    e7 = Entry(function_frm, textvariable=status, bg='#ECDBBA')
     e7.place(x=550, y=20)
 
     btn1 = Button(function_frm, text='Add', bg='green', fg='white', activeforeground='white', activebackground='green',
@@ -200,12 +225,14 @@ def req_return():
     btn3.place(x=470, y=140)
 
 
-def shipping_data():
+def shipping_data(button):
     new = Toplevel(main)
-    new.geometry('710x620')
+    new.geometry('720x620')
     new.resizable(FALSE, FALSE)
     new.title("shipping")
+    new.config(bg='#191919')
     cursordb.execute('SELECT * FROM shipping_database')
+    button['state'] = 'disabled'
 
     def filterTeeView(*args):
         ItemsOnTreeview = treeview.get_children()
@@ -256,21 +283,21 @@ def shipping_data():
         treeview.delete(selected)
 
     # entry frame
-    topframe = Frame(new, bg='white')
-    topframe.place(x=5, y=12, width=400, height=80)
+    topframe = Frame(new, bg='#C84B31')
+    topframe.place(x=12, y=12, width=400, height=80)
     # tree frame
-    tree_frame = Frame(new, bg='green')
-    tree_frame.place(x=5, y=300, width=700, height=300)
-    new.iconphoto(True, employee_icon)
-    Label(new, text="Shipping   ", font=('Arial', 15, 'bold'), fg='white', background='#6998AB', relief=FLAT, bd=5,
-          padx=32, image=employee_icon, compound='left').place(x=415, y=6)
+    tree_frame = Frame(new, bg='#ECDBBA')
+    tree_frame.place(x=10, y=300, width=700, height=300)
+    new.iconphoto(FALSE, ship_icon)
+    Label(new, text="Shipping   ", font=('Arial', 10, 'bold'), fg='white', background='#2D4263', relief=FLAT, bd=5,
+          padx=40, pady=1, image=ship_icon, compound='left').place(x=429, y=9)
 
     # search by text
-    lb1 = Label(topframe, text="Check returns:", fg='black', bg='white')
+    lb1 = Label(topframe, text="Check returns:", fg='black', bg='#ECDBBA')
     lb1.place(x=10, y=32)
     search_var = StringVar()
     # entry terminal
-    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'), bg='#ECDBBA')
     entry.place(x=95, y=30)
     search_var.trace('w', filterTeeView)
 
@@ -287,28 +314,28 @@ def shipping_data():
     for i in cursordb:
         treeview.insert('', END, values=i)
 
-    function_frm = Frame(new, bg='white', width=700, height=180)
-    function_frm.place(x=5, y=110)
-    Label(function_frm, text='Shipping ID:', font=('arial', 9, 'bold'), bg='white').place(x=10, y=20)
+    function_frm = Frame(new, bg='#C84B31', width=700, height=180)
+    function_frm.place(x=12, y=110)
+    Label(function_frm, text='Shipping ID:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=10, y=20)
     Shipping_id = IntVar()
-    Label(function_frm, text='Product:', font=('arial', 9, 'bold'), bg='white').place(x=10, y=60)
+    Label(function_frm, text='Product:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=10, y=60)
     Product = StringVar()
-    Label(function_frm, text='Status:', font=('arial', 9, 'bold'), bg='white').place(x=10, y=100)
+    Label(function_frm, text='Status:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=10, y=100)
     Status = StringVar()
-    Label(function_frm, text='Quantity:', font=('arial', 9, 'bold'), bg='white').place(x=260, y=20)
+    Label(function_frm, text='Quantity:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=260, y=20)
     Quantity = IntVar()
-    Label(function_frm, text='Date:', font=('arial', 9, 'bold'), bg='white').place(x=260, y=60)
+    Label(function_frm, text='Date:', font=('arial', 9, 'bold'), bg='#ECDBBA').place(x=260, y=60)
     Date = StringVar()
 
-    e1 = Entry(function_frm, textvariable=Shipping_id)
-    e1.place(x=80, y=20)
-    e2 = Entry(function_frm, textvariable=Product)
+    e1 = Entry(function_frm, textvariable=Shipping_id, bg='#ECDBBA')
+    e1.place(x=90, y=20)
+    e2 = Entry(function_frm, textvariable=Product, bg='#ECDBBA')
     e2.place(x=80, y=60)
-    e3 = Entry(function_frm, textvariable=Status)
+    e3 = Entry(function_frm, textvariable=Status, bg='#ECDBBA')
     e3.place(x=80, y=100)
-    e4 = Entry(function_frm, textvariable=Quantity)
+    e4 = Entry(function_frm, textvariable=Quantity, bg='#ECDBBA')
     e4.place(x=330, y=20)
-    e5 = Entry(function_frm, textvariable=Date)
+    e5 = Entry(function_frm, textvariable=Date, bg='#ECDBBA')
     e5.place(x=330, y=60)
 
     btn1 = Button(function_frm, text='Add', bg='green', fg='white', activeforeground='white', activebackground='green',
@@ -322,12 +349,14 @@ def shipping_data():
     btn3.place(x=470, y=140)
 
 
-def create2():
+def create2(button):
     new = Toplevel(main)
-    new.geometry('710x440')
+    new.geometry('900x440')
     new.resizable(FALSE, FALSE)
-    new.title("CUSTOMER DATABASE")
+    new.title("DATABASES")
     cursordb.execute('SELECT * FROM customer_database')
+    new.iconphoto(FALSE, customer_data)
+    button['state'] = 'disabled'
 
     def filterTeeView(*args):
         ItemsOnTreeview = treeview.get_children()
@@ -340,16 +369,16 @@ def create2():
 
                 treeview.insert('', 0, values=search_var_m)
 
-    # entry frame
-    topframe = Frame(new, bg='white')
-    topframe.place(x=5, y=10, width=400, height=80)
-    # tree frame
-    tree_frame = Frame(new, bg='green')
-    tree_frame.place(x=5, y=100, width=700, height=300)
-    new.iconphoto(True, customer_icon)
-    Label(new, text="Customers", font=('Arial', 15, 'bold'), fg='white', background='black', relief=SUNKEN, bd=5,
-          padx=32, image=customer_icon, compound='left').place(x=415, y=6)
+    notebook = ttk.Notebook(new)
+    tab1 = Frame(notebook)
+    notebook.add(tab1, text='customer_database')
 
+    # entry frame
+    topframe = Frame(tab1, bg='white')
+    topframe.pack()
+    # tree frame
+    tree_frame = Frame(tab1, bg='green')
+    tree_frame.pack()
     # search by text
     lb1 = Label(topframe, text="Search Name:", fg='black', bg='white')
     lb1.place(x=10, y=32)
@@ -362,25 +391,166 @@ def create2():
     # treeview
     column = ["Customer ID", "Customer name", "Nationality", "Adress", "Contact number", "Last visit", "Email",
               "Loyalty count"]
-    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview = ttk.Treeview(tree_frame, height=80, column=column)
     treeview.pack(fill='both')
     treeview['show'] = 'headings'
     for x in column:
-        treeview.column(x, width=80)
+        treeview.column(x, width=100)
         treeview.heading(x, text=x.capitalize())
 
     # inserting data
     for i in cursordb:
         treeview.insert('', END, values=i)
 
+    # ----------------------------------------------------------------------------------------------------------
+    tab2 = Frame(notebook)
+    notebook.add(tab2, text='Employee management')
+    ncursor.execute('SELECT * FROM employee_database')
 
-def update_stock():
+    # entry frame
+    topframe = Frame(tab2, bg='white')
+    topframe.pack()
+    # tree frame
+    tree_frame = Frame(tab2, bg='green')
+    tree_frame.pack()
+
+    # search by text
+    lb1 = Label(topframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    # entry terminal
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+    search_var.trace('w', filterTeeView)
+
+    # treeview
+    column = ["Employee_ID", "Full_name", "Gender", "Department", "Contact_number", "Address", "Email",
+              "Absents"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+    for x in column:
+        treeview.column(x, width=100)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in ncursor:
+        treeview.insert('', END, values=i)
+
+    # ----------------------------------------------------------------------------------------------------------
+    tab3 = Frame(notebook)
+    notebook.add(tab3, text='stock_management')
+    u_cursor.execute('SELECT * FROM stock_management')
+
+    # entry frame
+    topframe = Frame(tab3, bg='white')
+    topframe.pack()
+    # tree frame
+    tree_frame = Frame(tab3, bg='green')
+    tree_frame.pack()
+
+    # search by text
+    lb1 = Label(topframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    # entry terminal
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+    search_var.trace('w', filterTeeView)
+
+    # treeview
+    column = ["s_no", "Item_name", "Quantity", "Unit_price", "Sold", "Discount"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+    for x in column:
+        treeview.column(x, width=100)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in u_cursor:
+        treeview.insert('', END, values=i)
+
+    # ----------------------------------------------------------------------------------------------------------
+    tab4 = Frame(notebook)
+    notebook.add(tab4, text='Shipping database')
+    s_cursor.execute('SELECT * FROM shipping_database')
+
+    # entry frame
+    topframe = Frame(tab4, bg='white')
+    topframe.pack()
+    # tree frame
+    tree_frame = Frame(tab4, bg='green')
+    tree_frame.pack()
+
+    # search by text
+    lb1 = Label(topframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    # entry terminal
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+    search_var.trace('w', filterTeeView)
+
+    # treeview
+    column = ["Shipping_ID", "Product", "Status", "Quantity", "Date"]
+    treeview = ttk.Treeview(tree_frame, height=100, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+    for x in column:
+        treeview.column(x, width=100)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in s_cursor:
+        treeview.insert('', END, values=i)
+
+    # ----------------------------------------------------------------------------------------------------------
+    tab5 = Frame(notebook)
+    notebook.add(tab5, text='return database')
+    r_cursor.execute('SELECT * FROM return_database')
+
+    # entry frame
+    topframe = Frame(tab5, bg='white')
+    topframe.pack()
+    # tree frame
+    tree_frame = Frame(tab5, bg='green')
+    tree_frame.pack()
+
+    # search by text
+    lb1 = Label(topframe, text="Search Name:", fg='black', bg='white')
+    lb1.place(x=10, y=32)
+    search_var = StringVar()
+    # entry terminal
+    entry = Entry(topframe, textvariable=search_var, font=('Arial', 15, 'bold'))
+    entry.place(x=95, y=30)
+    search_var.trace('w', filterTeeView)
+
+    # treeview
+    column = ["return_ID", "order_ID", "product", "reason", "quantity", 'date', 'status']
+    treeview = ttk.Treeview(tree_frame, height=50, column=column)
+    treeview.pack(fill='both')
+    treeview['show'] = 'headings'
+    for x in column:
+        treeview.column(x, width=100)
+        treeview.heading(x, text=x.capitalize())
+
+    # inserting data
+    for i in r_cursor:
+        treeview.insert('', END, values=i)
+
+    notebook.pack()
+
+
+def update_stock(button):
     new = Toplevel(main)
     new.geometry('800x650')
     new.resizable(FALSE, FALSE)
     new.title("UPDATE CUSTOMER DATABASE")
     cursordb.execute('SELECT * FROM stock_management')
-    new.config(bg="#FBE7C6")
+    new.config(bg="#0F2C67")
+    new.iconphoto(FALSE, photo1)
+    button['state'] = 'disabled'
 
     def add_data():
         n_s_no = s_no.get()
@@ -432,32 +602,32 @@ def update_stock():
 
                 treeview.insert('', 0, values=search_var_m)
 
-    ent_frm = Frame(new, bg='white', height=230, width=300)
+    ent_frm = Frame(new, bg='#F3950D', height=230, width=300)
     ent_frm.place(x=40, y=130)
-    Label(ent_frm, text='S.No:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=10)
-    Label(ent_frm, text='Item name:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=50)
-    Label(ent_frm, text='Quantity:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=90)
-    Label(ent_frm, text='Unit price:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=130)
-    Label(ent_frm, text='Sold:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=170)
-    Label(ent_frm, text='Discount:', font=('arial', 10, 'bold'), bg='white').place(x=10, y=200)
+    Label(ent_frm, text='S.No:', font=('arial', 10, 'bold'), bg='#F3950D').place(x=10, y=10)
+    Label(ent_frm, text='Item name:', font=('arial', 10, 'bold'), bg='#F3950D').place(x=10, y=50)
+    Label(ent_frm, text='Quantity:', font=('arial', 10, 'bold'), bg='#F3950D').place(x=10, y=90)
+    Label(ent_frm, text='Unit price:', font=('arial', 10, 'bold'), bg='#F3950D').place(x=10, y=130)
+    Label(ent_frm, text='Sold:', font=('arial', 10, 'bold'), bg='#F3950D').place(x=10, y=170)
+    Label(ent_frm, text='Discount:', font=('arial', 10, 'bold'), bg='#F3950D').place(x=10, y=200)
 
     s_no = IntVar()
-    terminal1 = Entry(ent_frm, textvariable=s_no)
+    terminal1 = Entry(ent_frm, textvariable=s_no, bg='#F4E185')
     Item_name = StringVar()
-    terminal2 = Entry(ent_frm, textvariable=Item_name)
+    terminal2 = Entry(ent_frm, textvariable=Item_name, bg='#F4E185')
     Quantity = StringVar()
-    terminal3 = Entry(ent_frm, textvariable=Quantity)
+    terminal3 = Entry(ent_frm, textvariable=Quantity, bg='#F4E185')
     Unit_price = StringVar()
-    terminal4 = Entry(ent_frm, textvariable=Unit_price)
+    terminal4 = Entry(ent_frm, textvariable=Unit_price, bg='#F4E185')
     Sold = IntVar()
-    terminal5 = Entry(ent_frm, textvariable=Sold)
+    terminal5 = Entry(ent_frm, textvariable=Sold, bg='#F4E185')
     discount = IntVar()
-    terminal6 = Entry(ent_frm, textvariable=discount)
+    terminal6 = Entry(ent_frm, textvariable=discount, bg='#F4E185')
 
     terminal1.place(x=70, y=10)
-    terminal2.place(x=90, y=50)
+    terminal2.place(x=100, y=50)
     terminal3.place(x=80, y=90)
-    terminal4.place(x=100, y=130)
+    terminal4.place(x=90, y=130)
     terminal5.place(x=60, y=170)
     terminal6.place(x=80, y=200)
 
@@ -479,21 +649,21 @@ def update_stock():
         treeview.insert('', END, values=i)
 
     # title
-    title_frm = Frame(new, bg='white', height=90, width=700)
+    title_frm = Frame(new, bg='#CD1818', height=90, width=720)
     title_frm.place(x=40, y=20)
-    Label(title_frm, text='STOCK MANAGEMENT', font=('arial', 40, 'bold'), bg='white').place(x=50, y=10)
+    Label(title_frm, text='STOCK MANAGEMENT', font=('arial', 40, 'bold'), bg='#CD1818').place(x=50, y=10)
 
     # search frame
     search_var = StringVar()
-    s_frm = Frame(new, bg='white', height=70, width=390)
+    s_frm = Frame(new, bg='#F3950D', height=70, width=400)
     s_frm.place(x=360, y=290)
-    Label(s_frm, text='Check Stock:', bg='white', fg='black', font=('arial', 9, 'bold')).place(x=10, y=20)
-    search_box = Entry(s_frm, textvariable=search_var, width=40)
+    Label(s_frm, text='Check Stock:', bg='#F3950D', fg='black', font=('arial', 9, 'bold')).place(x=10, y=20)
+    search_box = Entry(s_frm, textvariable=search_var, width=40, bg='#F4E185')
     search_box.place(x=100, y=20)
     search_var.trace('w', filterTeeView)
 
     # button frame
-    b_frm = Frame(new, bg='white', height=130, width=390)
+    b_frm = Frame(new, bg='#F3950D', height=130, width=400)
     b_frm.place(x=360, y=130)
     Button(b_frm, text='Add', bg='green', fg='white', activeforeground='white',
            activebackground='green', height=2, width=22, font=('arial', 9, 'bold'),
@@ -506,13 +676,14 @@ def update_stock():
            command=lambda: update_data()).place(x=80, y=70)
 
 
-def update_employee():
+def update_employee(button):
     new = Toplevel(main)
     new.geometry('1100x650')
     new.resizable(FALSE, FALSE)
     new.title("EMPLOYEE MANAGEMENT")
     new.config(bg="#FBE7C6")
     cursordb.execute('SELECT * FROM employee_database')
+    button['state'] = 'disabled'
 
     def add_data():
         n_Employee_ID = Employee_ID.get()
@@ -654,13 +825,15 @@ def update_employee():
     entry.place(x=95, y=30)
 
 
-def update_customer():
+def update_customer(button):
     new = Toplevel(main)
     new.geometry('1200x650')
     new.resizable(FALSE, FALSE)
     new.title("CUSTOMER MANAGEMENT")
     new.config(bg="#FBE7C6")
     cursordb.execute('SELECT * FROM customer_database')
+    new.iconphoto(FALSE, customer_check)
+    button['state'] = 'disabled'
 
     def add_data():
         n_Customer_ID = Customer_ID.get()
@@ -694,14 +867,14 @@ def update_customer():
         n_Loyalty_count = Loyalty_count.get()
         sql = 'UPDATE customer_database SET Customer_name=%s, Nationality=%s, Adress=%s, Contact_number=%s, ' \
               'Last_visit=%s, Email=%s, Loyalty_count=%s WHERE Customer_ID=%s '
-        value = (n_Customer_name, n_Nationality, n_Address,n_Contact_number, n_Last_visit, n_Email,
+        value = (n_Customer_name, n_Nationality, n_Address, n_Contact_number, n_Last_visit, n_Email,
                  n_Loyalty_count, n_Customer_ID)
         cursordb.execute(sql, value)
         main_database.commit()
 
         treeview.delete(selected)
         treeview.insert('', END, values=(n_Customer_ID, n_Customer_name, n_Nationality, n_Address,
-                                         n_Contact_number, n_Last_visit, n_Email,n_Loyalty_count))
+                                         n_Contact_number, n_Last_visit, n_Email, n_Loyalty_count))
 
     def delete_data(tree):
         selected = treeview.selection()[0]
@@ -805,6 +978,55 @@ def update_customer():
     entry.place(x=95, y=30)
 
 
+def register():
+    def ok():
+        def add_data():
+            n_user = trm1.get()
+            n_pass = trm2.get()
+            n_id = trm3.get()
+            sql = 'INSERT INTO login_credentials(userID, username, passowrd)VALUES(%s, %s, %s)'
+            values = (n_id, n_user, n_pass)
+            cursordb.execute(sql, values)
+            main_database.commit()
+
+        pin = ent1.get()
+        if pin == '320910':
+            new.destroy()
+            window = Toplevel(main)
+            window.title('Register')
+            window.geometry('400x400')
+            newf = Frame(window, bg='white', height=376, width=376)
+            newf.place(x=11, y=10)
+            n_trm1 = StringVar()
+            n_trm2 = StringVar()
+            n_trm3 = IntVar()
+            Label(newf, text='userID', font=('arial', 9, 'bold'), bg='white').place(x=20, y=10)
+            trm3 = Entry(newf, font=('arial', 10, 'bold'), textvariable=n_trm3)
+            trm3.place(x=20, y=30)
+            Label(newf, text='USERNAME', font=('arial', 20, 'bold'), bg='white').place(x=20, y=60)
+            trm1 = Entry(newf, font=('arial', 20, 'bold'), textvariable=n_trm1)
+            trm1.place(x=20, y=110)
+            Label(newf, text='PASSWORD', font=('arial', 20, 'bold'), bg='white').place(x=20, y=160)
+            trm2 = Entry(newf, font=('arial', 20, 'bold'), textvariable=n_trm2)
+            trm2.place(x=20, y=210)
+            r_btn = Button(newf, text='Register', font=('arial', 17, 'bold'), bg='green', fg='white',
+                           activeforeground='white', activebackground='green', command=lambda: add_data())
+            r_btn.place(x=20, y=290)
+        elif pin == '':
+            messagebox.showerror('ERROR', 'PLEASE INPUT PIN')
+        else:
+            messagebox.showerror('ERROR', 'WRONG PIN')
+
+    new = Toplevel(main)
+    new.title('REGISTER')
+    new.geometry('320x140')
+    Label(new, text='PIN', font=('arial', 12, 'bold')).place(x=145, y=10)
+    ent1 = Entry(new, font=('arial', 12, 'bold'))
+    ent1.place(x=72, y=45)
+    Button(new, text='submit', bg='green', fg='white', activebackground='green',
+           activeforeground='white', command=ok).place(x=140, y=80)
+
+
 main = Tk()
 main.geometry("650x600")
 main.resizable(FALSE, FALSE)
@@ -812,15 +1034,18 @@ main.config(bg="#064663")
 main.title("LOGIN")
 icon = PhotoImage(file='user.png')
 main.iconphoto(True, icon)
-Check_Stocks = PhotoImage(file='check stock.png')
+Check_Stocks = PhotoImage(file='shipped (1).png')
 photo1 = PhotoImage(file='Hnet.com-imagemain.png')
-photo2 = PhotoImage(file='database png.png')
+photo2 = PhotoImage(file='n_return.png')
 check_employee = PhotoImage(file='background check.png')
 customer_check = PhotoImage(file='customer check.png')
 customer_data = PhotoImage(file='database for customer.png')
 employee_icon = PhotoImage(file='employee (1).png')
 stock_icon = PhotoImage(file='inventory (1).png')
 customer_icon = PhotoImage(file='male-customer (1).png')
+d_icon = PhotoImage(file='dashboard1.png')
+ship_icon = PhotoImage(file='80x80 ship.png')
+icon_return = PhotoImage(file='80x80 return.png')
 
 frame = Frame(main, bg="white", width=370, height=500, relief=SUNKEN, bd=5)
 frame.place(x=265, y=50)
@@ -849,5 +1074,9 @@ login_button.place(x=20, y=420)
 del_button = Button(frame, text='Clear', height='2', width=20, bg='#189AB4', fg='#D4F1F4', bd=0,
                     activebackground='#189AB4', activeforeground='#D4F1F4', command=delete)
 del_button.place(x=20, y=360)
+
+reg_button = Button(frame, text='Register', height=4, width=16, bg='#7267CB', fg='#D4F1F4', bd=0,
+                    activebackground='#189AB4', activeforeground='#D4F1F4', command=lambda: register())
+reg_button.place(x=200, y=370)
 
 main.mainloop()
