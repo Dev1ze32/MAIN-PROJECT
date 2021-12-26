@@ -58,8 +58,8 @@ def login_verification():
                         bg='#B4F8C8', relief=RAISED, activebackground='red', command=lambda: req_return(rq))
             rq.place(x=305, y=212)
             db = Button(new_frame, text='  Databases                ', font=('arial', 9, 'bold'), image=customer_data,
-                   compound='left',
-                   bg='#B4F8C8', activebackground='red', relief=RAISED, command=lambda: create2(db))
+                        compound='left',
+                        bg='#B4F8C8', activebackground='red', relief=RAISED, command=lambda: create2(db))
             db.place(x=305, y=376)
             btn1_r = Button(new_frame, text=' refresh', font=('arial', 9, 'bold'),
                             compound='left', bg='#B4F8C8', activebackground='red', relief=RAISED,
@@ -84,6 +84,10 @@ def refresh(button, button1, button2, button3, button4, button5):
     button3['state'] = 'normal'
     button4['state'] = 'normal'
     button5['state'] = 'normal'
+
+
+def refresh_login(button):
+    button['state'] = 'normal'
 
 
 def req_return(button):
@@ -978,7 +982,9 @@ def update_customer(button):
     entry.place(x=95, y=30)
 
 
-def register():
+def register(button):
+    button['state'] = 'disabled'
+
     def ok():
         def add_data():
             n_user = trm1.get()
@@ -987,10 +993,16 @@ def register():
             sql = 'INSERT INTO login_credentials(userID, username, passowrd)VALUES(%s, %s, %s)'
             values = (n_id, n_user, n_pass)
             cursordb.execute(sql, values)
+            if sql:
+                messagebox.showinfo('done', 'done')
+            else:
+                messagebox.showerror('error', 'eoor')
+
             main_database.commit()
 
         pin = ent1.get()
         if pin == '320910':
+            messagebox.showinfo('DONE', 'Successful')
             new.destroy()
             window = Toplevel(main)
             window.title('Register')
@@ -1075,8 +1087,12 @@ del_button = Button(frame, text='Clear', height='2', width=20, bg='#189AB4', fg=
                     activebackground='#189AB4', activeforeground='#D4F1F4', command=delete)
 del_button.place(x=20, y=360)
 
-reg_button = Button(frame, text='Register', height=4, width=16, bg='#7267CB', fg='#D4F1F4', bd=0,
-                    activebackground='#189AB4', activeforeground='#D4F1F4', command=lambda: register())
-reg_button.place(x=200, y=370)
+reg_button = Button(frame, text='Register', height=3, width=16, bg='#7267CB', fg='#D4F1F4', bd=0,
+                    activebackground='#189AB4', activeforeground='#D4F1F4', command=lambda: register(reg_button))
+reg_button.place(x=200, y=360)
+
+ref_button = Button(frame, text='Refresh', height=2, width=16, bg='green', fg='#D4F1F4', bd=0,
+                    activebackground='green', activeforeground='#D4F1F4', command=lambda: refresh_login(reg_button))
+ref_button.place(x=200, y=420)
 
 main.mainloop()
